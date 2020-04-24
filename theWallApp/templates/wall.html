@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Wall</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+<body>
+    <div class="container">
+        <div class="text-center">
+            <h1>Success! Welcome to "The Wall" {{request.session.name}}!</h1>
+            <!-- Logout form -->
+            <form action="/logout" method="POST">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+        <div class="jumbotron">
+            <!-- Post a new message form -->
+            <h2 class="text-center">Post a Message</h2>
+            <form class="text-right" action="/message" method="POST">
+                {% csrf_token %}
+                <textarea name="message" id="" cols="100" rows="5" placeholder="Type your message here!!"></textarea>
+                <button type="submit">Post Message</button>
+            </form>
+        </div>
+        <!-- Display messages & comments below -->
+        <div class="container">
+            <h2 class="text-center">Existing Messages</h2>
+            {% for message in messages %}
+                <div class="container jumbotron">
+                    {% if message.user.id == request.session.userID %}
+                        <div class="container text-right text-wrap">
+                            <p>You posted at {{message.created_at}}:</p>
+                            <h4>{{message.message}}</h4>
+                            <p><a href="/deleteMessage/{{message.id}}">Delete Message</a></p>
+                        </div>
+                    {% else %}
+                        <div class="container">
+                            <p>{{ message.user.first_name }} {{ message.user.last_name}} posted at {{message.created_at}}:</p>
+                            <h4>{{message.message}}</h4>
+                        </div>
+                    {% endif %}
+                    {% for comment in message.comments.all %}
+                            {% if comment.user.id == request.session.userID %}
+                                <div class="container text-right">
+                                    <p>You commented at {{comment.created_at}}:</p>
+                                    <h5>{{comment.comment}}</h5>
+                                    <p><a href="deleteComment/{{comment.id}}">Delete Comment</a></p>
+                                </div>
+                            {% else %}
+                                <div class="container">
+                                    <p>{{ comment.user.first_name }} {{ comment.user.last_name}} commented at {{comment.created_at}}:</p>
+                                    <h5>{{comment.comment}}</h5>
+                                </div>
+                            {% endif %}
+                    {% endfor %}
+                    <!-- Post comment on message form -->
+                    <div class="container text-right">
+                        <h5>Post a comment:</h5>
+                        <form action="/comment" method="POST">
+                            {% csrf_token %}
+                            <textarea name="comment" id="" cols="70" rows="5"placeholder="Type your comment here!!"></textarea>
+                            <input type="hidden" name="messageID" value="{{message.id}}">
+                            <p><button type="submit">Post Comment</button></p>
+                        </form>                    
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
